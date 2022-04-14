@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+# version de prueba del frontend
+before_install:
+  - docker build -t valvarezxxx/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run valvarezxxx/react-test  npm run test CI=true -- --coverage
+
+after_success:
+  - docker build -t valvarezxxx/multi-client ./client
+  - docker build -t valvarezxxx/multi-nginx ./nginx
+  - docker build -t valvarezxxx/multi-server ./server
+  - docker build -t valvarezxxx/multi-worker ./worker
+
+  # Login in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  # Take those images and push then to docker hub
+  - docker push valvarezxxx/multi-client
+  - docker push valvarezxxx/multi-nginx
+  - docker push valvarezxxx/multi-server
+  - docker push valvarezxxx/multi-worker
