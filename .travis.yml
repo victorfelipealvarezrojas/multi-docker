@@ -1,4 +1,6 @@
 sudo: required
+language: generic
+
 services:
   - docker
 
@@ -15,8 +17,8 @@ after_success:
   - docker build -t valvarezxxx/multi-server ./server
   - docker build -t valvarezxxx/multi-worker ./worker
 
-  # Login in to the docker CLI
-  - echo "\$DOCKER_PASSWORD" | docker_login -u "\$DOCKER_ID" --password-stdin
+  # Login in to the docker CLI DOCKER_ID DOCKER_PASSWORD
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
 
   # Take those images and push then to docker hub
   - docker push valvarezxxx/multi-clientfront
