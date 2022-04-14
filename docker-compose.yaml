@@ -1,0 +1,54 @@
+version: '3'
+services:
+  postgres: ## SERVICIO DE BD
+    image: 'postgres:latest'
+    environment:
+      - POSTGRES_PASSWORD=postgres_password
+  redis: ## SERVICIO REDIS
+    image: 'redis:latest'
+  nginx: ## SERVICIO DE SERVIDOR WEB Y RUTAS
+    depends_on:
+      - api
+      - client
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - '3050:80' # Archivo de conf para ngnix esta escuchando el puerto 80
+  api: ## SERVICIO BACKEND
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./server ## folder donde se encuentar el archivo
+    volumes:
+      - /app/node_modules # dentro del contenedor no remplace su contenido nunca y el contenido se crea con el docker file
+      - ./server:/app # toma todo lo que esta dentro del directorio de trabajo actual : y lo envia al directorio de trabajo del contenedor
+    environment: #estas variables de entorno seran leidas por el process.env del backend
+      - REDIS_HOST=redis #nombre que le di en el servicio
+      - REDIS_PORT=6379 #puerto que utuiliza por defecto redis
+      - PGUSER=postgres #nombre que le di en el servicio
+      - PGHOST=postgres #nombre que le di en el servicio
+      - PGDATABASE=postgres #db predeterminada
+      - PGPASSWORD=postgres_password # predetermianda
+      - PGPORT=5432
+  client: ## SERVICIO FRONTEND
+    stdin_open: true
+    #tty: true
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      - /app/node_modules # dentro del contenedor no remplace su contenido nunca
+      - ./client:/app # toma todo lo que esta dentro del directorio de trabajo actual : y lo envia al directorio de trabajo del contenedor
+  worker: ## SERVICIO BACKEN ADICIONAL
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+      - /app/node_modules # dentro del contenedor no remplace su contenido nunca
+      - ./worker:/app # toma todo lo que esta dentro del directorio de trabajo actual : y lo envia al directorio de trabajo del contenedor
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+## docker-compose up 

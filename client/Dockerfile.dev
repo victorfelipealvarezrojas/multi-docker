@@ -1,0 +1,17 @@
+# uso version antigua de node xq mi proyecto cliente esta crado con una version antigua de react, de lo contrario error
+FROM node:14.14.0-alpine
+
+WORKDIR '/app'
+
+# directorio actual directorio destino
+COPY ./package.json ./
+
+# Install dependencias
+RUN npm install
+
+COPY . .
+
+CMD ["npm","run","start"]
+
+## docker build -f Dockerfile.dev  -t valvarezxxx/client . 
+### docker run valvarezxxx/client
